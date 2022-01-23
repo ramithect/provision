@@ -1,0 +1,10 @@
+---
+- hosts: Mikrotik
+  vars:
+    ansible_connection: network_cli
+    ansible_network_os: routeros
+    ansible_user: devops+cet1024w
+    ansible_ssh_password: 69MbaBpcCCym
+    ansible_ssh_port: 2122
+  roles:
+    - mikrotik

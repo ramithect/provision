@@ -1,13 +1,12 @@
 ---
 - name: ----- Create needed directories -----
   file:
-    path: /home/ansible/provision/{{item}}
+    path: /home/ansible/provision/Ansible/{{item}}
     state: directory
     owner: root
     group: root
     mode: 0755
   with_items:
-    - roles
     - roles/{{ PROJECT_NAME }}
     - roles/{{ PROJECT_NAME }}/defaults
     - roles/{{ PROJECT_NAME }}/tasks
@@ -20,7 +19,7 @@
 
 - name: ----- Create needed files  -----
   file:
-    path: /home/ansible/provision/{{ item }}.yml
+    path: /home/ansible/provision/Ansible/{{ item }}.yml
     state: touch
     owner: root
     group: root

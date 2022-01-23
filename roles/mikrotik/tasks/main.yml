@@ -1,0 +1,13 @@
+---
+- name: ----- Copy config.conf to mikrotik -----
+  command: scp -P 2122 /home/ansible/provision/Ansible/roles/mikrotik/files/config.rsc devops@192.168.20.250:/
+  register: test
+
+- name: debug
+  debug:
+    msg: "{{ test.stdout }}"
+
+- name: ----- Import the configuration -----
+  routeros_command:
+    commands:
+      - import config.rsc
