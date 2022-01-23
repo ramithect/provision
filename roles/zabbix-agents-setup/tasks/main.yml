@@ -1,0 +1,67 @@
+#- name: ----- Install Zabbix repository -----
+#  apt:
+#    deb: https://repo.zabbix.com/zabbix/5.4/debian/pool/main/z/zabbix-release/zabbix-release_5.4-1+debian11_all.deb
+#    update_cache: yes
+#  when: ansible_lsb.id == "Debian"
+#  tags: [Install_repo]
+#
+#- name: ----- Install Zabbix repository -----
+#  apt:
+#    deb: https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb
+#    update_cache: yes
+#  when: ansible_lsb.id == "Ubuntu"
+#  tags: [Install_repo]
+#
+- name: ----- Install Zabbix-agent2 -----
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+  loop: [ 'zabbix-agent2', 'zabbix-get', 'zabbix-sender'] 
+  tags: [install_packages]
+
+- name: ----- Check if docker-ce is installed or not -----
+  command: dpkg-query -l docker-ce
+  ignore_errors: true
+  register: docker_installed
+      
+- name: ----- Add zabbix user to docker group -----
+  user:
+    name: zabbix
+    groups: docker
+    append: yes
+  when: docker_installed is succeeded
+  tags: [add_to_docker]
+
+- name: ----- Add zabbix user to adm group -----
+  user:
+    name: zabbix
+    groups: adm
+    append: yes
+  tags: [add_to_adm]
+
+- name: ----- Create /home/devops/.zabbix directory to copy PSK file -----
+  file:
+    path: /etc/zabbix/psk
+    state: directory
+    recurse: yes
+  tags: [psk-file-dir]
+
+- name: ----- copy PSK file to /home/devops/.zabbix directory -----
+  copy:
+    src: zabbix_agent.psk
+    dest: /etc/zabbix/psk/
+    owner: zabbix
+    group: zabbix
+    mode: 0440
+  tags: [copy_psk_file]
+
+- name: ----- Change the zabbix_agent2.conf configuration file to set the Server, ServerActive and UserParameters -----
+  template:
+    src: "{{ item.name }}.j2"
+    dest: /etc/zabbix/{{ item.dest }}
+    backup: yes
+  loop:
+    - {name: zabbix_agent2.conf,dest: zabbix_agent2.conf}
+    - {name: userparameters.conf,dest: zabbix_agent2.d/userparameters.conf}
+  notify: restart zabbix-agent2.service
+  tags: [configure_agent]

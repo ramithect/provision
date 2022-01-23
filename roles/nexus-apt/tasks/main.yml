@@ -1,0 +1,47 @@
+- name: ----- Copy gpg keys to /etc/apt/trusted.gpg.d directory -----
+  copy:
+    src: "{{ item }}"
+    dest: /etc/apt/trusted.gpg.d/
+  loop:
+    - zabbix.gpg
+      #    - GPG-KEY-DOCKER
+      #    - GPG-KEY-GITLAB
+    - GPG-KEY-NGINX
+    - GPG-KEY-WAZUH
+      #- GPG-KEY-ELASTIC
+      # - GPG-KEY-JENKINS
+  tags: [copy_gpg_keys]
+
+- name: ----- Replace needed files in /etc/apt directory for Debian -----
+  template:
+    src: "{{ item.src }}"
+    dest: /etc/apt/{{ item.dest }}
+  with_items:
+    - { src: debian.list.j2, dest: sources.list }
+    - { src: debian_zabbix.list.j2, dest: sources.list.d/zabbix.list }
+      # - { src: debian_docker.list.j2, dest: sources.list.d/docker.list }  
+      #- { src: debian_gitlab.list.j2, dest: sources.list.d/gitlab.list }  
+    - { src: debian_nginx.list.j2, dest: sources.list.d/nginx.list }  
+    - { src: wazuh.list.j2, dest: sources.list.d/wazuh.list }  
+      #- { src: elastic.list.j2, dest: sources.list.d/elastic.list }  
+      #- { src: jenkins.list.j2, dest: sources.list.d/jenkins.list }  
+    - { src: auth_debian_nexus.conf.j2, dest: auth.conf.d/auth_debian_nexus.conf }
+  when: ansible_lsb.id == "Debian"
+  tags: [replace_sources]
+
+- name: ----- Replace needed files in /etc/apt directory for Ubuntu -----
+  template:
+    src: "{{ item.src }}"
+    dest: /etc/apt/{{ item.dest }}
+  with_items:
+    - { src: ubuntu.list.j2, dest: sources.list }
+    - { src: ubuntu_zabbix.list.j2, dest: sources.list.d/zabbix.list }
+      #    - { src: ubuntu_docker.list.j2, dest: sources.list.d/docker.list }  
+      #    - { src: ubuntu_gitlab.list.j2, dest: sources.list.d/gitlab.list }  
+    - { src: ubuntu_nginx.list.j2, dest: sources.list.d/nginx.list }  
+    - { src: wazuh.list.j2, dest: sources.list.d/wazuh.list }  
+      #- { src: elastic.list.j2, dest: sources.list.d/elastic.list }  
+      # - { src: jenkins.list.j2, dest: sources.list.d/jenkins.list }  
+    - { src: auth_ubuntu_nexus.conf.j2, dest: auth.conf.d/auth_ubuntu_nexus.conf }
+  when: ansible_lsb.id == "Ubuntu"
+  tags: [replace_sources]

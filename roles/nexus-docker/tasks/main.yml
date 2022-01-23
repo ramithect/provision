@@ -1,0 +1,35 @@
+- name: ----- Create /home/devops/.docker directory -----
+  file:
+    path: /home/devops/.docker
+    state: directory
+    owner: devops
+    group: devops
+    force: no
+  tags: [create_dir]
+
+- name: ----- Create or replace daemon.json and config.json using template module -----
+  template:
+    src: "{{ item.src }}.j2"
+    dest: "{{ item.dest }}"
+    backup: yes
+  with_items:
+    - { src: daemon.json, dest: /etc/docker/daemon.json }
+    - { src: config.json, dest: /home/devops/.docker/config.json }
+  tags: [configure_docker]
+
+- name: ----- Restart docker service and daemon_reload -----
+  service:
+    name: docker
+    state: restarted
+    enabled: true
+    daemon_reload: yes
+  tags: [restart_docker]
+
+- name: -----  login to added repositories -----
+  become: false
+  command: docker login {{ item }}
+  loop: 
+    - "{{ NEXUS_ADDRESS }}:8083"
+    - "{{ NEXUS_ADDRESS }}:8084"
+    - "{{ NEXUS_ADDRESS }}:8085"
+  tags: [login_to_registry]

@@ -1,0 +1,100 @@
+- name: ----- copy ZabbixImages directory to destination host -----
+  copy:
+    src: /root/ZabbixImages/
+    dest: /root/ZabbixImages/
+  tags: [copy_images]
+
+- name: ----- load needed images -----
+  docker_image:
+    name: zabbix/{{item}}
+    load_path: /root/ZabbixImages/{{item}}.tar
+    source: load
+    tag: alpine-5.4-latest
+  loop:
+    - zabbix-server-pgsql
+    - zabbix-web-nginx-pgsql
+  tags: [load_images]
+
+- name: ----- load postgres image -----
+  docker_image:
+    name: postgres
+    load_path: /root/ZabbixImages/postgres.tar
+    source: load
+    tag: latest
+  tags: [load_postgres]
+
+- name: ----- run postgres container -----
+  docker_container:
+    name: postgres-server
+    image: postgres:latest
+    volumes: 
+      - /root/zabbix/postgresql-server/var/lib/postgresql/data:/var/lib/postgresql/data:rw
+    env:
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: zabbix_pwd
+      POSTGRES_DB: zabbix
+    networks:
+      - name: zabbix-net
+    ports:
+      - 5432:5432
+    restart_policy: unless-stopped
+    tty: yes
+    state: started
+  tags: [postgres_container]
+
+- name: ----- run zabbix-server-pgsql container -----
+  docker_container:
+    name: zabbix-server-pgsql
+    image: zabbix/zabbix-server-pgsql:alpine-5.4-latest
+    volumes:
+      - /root/zabbix/zabbix-server/etc/localtime:/etc/localtime:ro
+      - /root/zabbix/zabbix-server/etc/timezone:/etc/timezone:ro
+      - /root/zabbix/zabbix-server/usr/lib/zabbix/alertscripts:/usr/lib/zabbix/alertscripts:ro
+      - /root/zabbix/zabbix-server/usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts:ro
+      - /root/zabbix/zabbix-server/var/lib/zabbix/export:/var/lib/zabbix/export:rw
+      - /root/zabbix/zabbix-server/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
+      - /root/zabbix/zabbix-server/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
+      - /root/zabbix/zabbix-server/var/lib/zabbix/ssl/certs:/var/lib/zabbix/ssl/certs:ro
+      - /root/zabbix/zabbix-server/var/lib/zabbix/ssl/keys:/var/lib/zabbix/ssl/keys:ro
+      - /root/zabbix/zabbix-server/var/lib/zabbix/ssl/ssl_ca:/var/lib/zabbix/ssl/ssl_ca:ro
+      - /root/zabbix/zabbix-server/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+      - /root/zabbix/zabbix-server/var/lib/zabbix/mibs:/var/lib/zabbix/mibs:ro
+      - /root/zabbix/zabbix-server/snmptraps:/var/lib/zabbix/snmptraps:rw
+    env:
+      DB_SERVER_HOST: postgres-server
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: zabbix_pwd
+      POSTGRES_DB: zabbix
+    networks:
+      - name: zabbix-net
+    ports:
+      - 10051:10051
+    restart_policy: unless-stopped
+    tty: yes
+    state: started
+  tags: [server_container]
+
+- name: ----- run zabbix-web-nginx-pgsql container -----
+  docker_container:
+    name: zabbix-web-nginx-pgsql
+    image: zabbix/zabbix-web-nginx-pgsql:alpine-5.4-latest
+    volumes:
+      - /root/zabbix/web/etc/localtime:/etc/localtime:ro
+      - /root/zabbix/web/etc/timezone:/etc/timezone:ro
+      - /root/zabbix/web/etc/ssl/nginx:/etc/ssl/nginx:ro
+      - /root/zabbix/web/share/zabbix/modules/:/usr/share/zabbix/modules/:ro
+    env:
+      ZBX_SERVER_HOST: zabbix-server-pgsql
+      DB_SERVER_HOST: postgres-server     
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: zabbix_pwd
+      POSTGRES_DB: zabbix
+    networks:
+      - name: zabbix-net
+    ports:
+      - 443:433
+      - 8080:8080
+    restart_policy: unless-stopped
+    tty: yes
+    state: started
+  tags: [web_container]

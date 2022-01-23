@@ -1,0 +1,6 @@
+---
+- hosts: All
+  gather_facts: false
+  become: true
+  roles:
+    - timesyncd-setup

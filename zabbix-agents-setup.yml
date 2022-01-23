@@ -1,0 +1,7 @@
+---
+- hosts: all
+  become: yes
+# You should specify the ZABBIX_ADDRESS variable in order to run this playbook. 
+# This variable will set 'Server' & 'ServerActive' parameters in 'zabbix_agent.conf' configuration file.
+  roles:
+    - zabbix-agents-setup

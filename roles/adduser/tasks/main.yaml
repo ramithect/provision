@@ -1,0 +1,7 @@
+---
+- name: ----- softlin /usr/bin/python to /usr/bin/python3 -----
+  file:
+    name: /usr/bin/python
+    src: /usr/bin/python3
+    state: link
+  tags: [add_alin_user]

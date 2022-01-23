@@ -1,0 +1,26 @@
+- name: ----- Run promscale container -----
+  docker_container:
+    name: promscale
+    image: "{{ NEXUS_ADDRESS }}:8085/timescale/promscale:0.7.1-amd64"
+    ports:
+      - 9201:9201
+    command: ["-db-uri", "postgres://postgres:P72x7av8@{{ POSTGRES_ADDRESS }}:5432/postgres?sslmode=allow"]
+    restart_policy: unless-stopped
+    tty: yes
+    state: started
+  tags: [promscale_container]
+
+- name: ----- Run timescale container -----
+  docker_container:
+    name: timescaledb
+    image: "{{ NEXUS_ADDRESS }}:8085/timescaledev/timescaledb-ha:pg12.6-ts2.2.0-p0"
+    env:
+      POSTGRES_PASSWORD: P72x7av8
+    ports:
+      - 5432:5432
+    volumes:
+      - timescaledb---home-postgres-pgdata:/home/postgres/pgdata:rw
+    restart_policy: unless-stopped
+    tty: yes
+    state: started
+  tags: [timescale_container]

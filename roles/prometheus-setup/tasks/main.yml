@@ -1,0 +1,35 @@
+- name: ----- Run node-exporter container -----
+  docker_container:
+    name: node-exporter
+    image: "{{ NEXUS_ADDRESS }}:8085/prom/node-exporter:v1.3.1"
+    ports:
+      - 9100:9100
+    restart_policy: unless-stopped
+    tty: yes
+    state: started
+  tags: [exporter_container]
+
+- name: ----- Create a directory to persist prometheus configuration -----
+  file:
+    path: /home/devops/prometheus
+    state: directory
+  tags: [prom_conf]
+
+- name: ----- Copy prometheus.yml to /home/devops/monit directory -----
+  template:
+    src: prometheus.yml.j2
+    dest: /home/devops/prometheus/prometheus.yml
+  tags: [prom_conf]
+
+- name: ----- Run prometheus container -----
+  docker_container:
+    name: prometheus
+    image: "{{ NEXUS_ADDRESS }}:8085/prom/prometheus:v2.32.1"
+    ports:
+      - 9090:9090
+    volumes:
+      - /home/devops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    restart_policy: unless-stopped
+    tty: yes
+    state: started
+  tags: [server_container]

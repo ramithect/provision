@@ -1,0 +1,1 @@
+{% raw %}UserParameter=net.tcp.listen.discovery,ss -ntl4 | cut -d":" -f"2" | cut -d" " -f"1" | sed s/Port/{#PORT}/g{% endraw %}

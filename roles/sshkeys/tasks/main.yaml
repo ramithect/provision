@@ -1,0 +1,45 @@
+- name: ----- make direcotry -----
+  file:
+    path: /home/{{ item }}/.ssh
+    state: directory
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: 0700
+  loop:
+    - master
+    - ali
+    - reza
+    - alin
+  tags: [make_ssh_dir]
+
+- name: ----- create empty file -----
+  file:
+    path: /home/{{ item }}/.ssh/authorized_keys
+    state: touch
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: 0600
+  loop:
+    - master
+    - ali
+    - reza
+    - alin
+  tags: [create_keyfile]
+
+- name: ----- put pubkey of each user in the right directory -----
+  lineinfile:
+    path: /home/{{ item.name }}/.ssh/authorized_keys
+    line: "{{ item.pubkey }}"
+  loop:
+    - { name: 'master', pubkey: '{{ master_pubkey }}' }
+    - { name: 'ali', pubkey: '{{ ali_pubkey }}' }
+    - { name: 'reza', pubkey: '{{ reza_pubkey }}' }
+    - { name: 'alin', pubkey: '{{ alin_pubkey }}' }
+  tags: [put_pubkeys]
+
+#- name: ----- replace sshd_config with the old one with template module -----
+#  template:
+#    src: sshd_config.j2
+#    dest: /etc/ssh/sshd_config
+#  notify: restart_sshd_service
+#  tags: [sshd_config]

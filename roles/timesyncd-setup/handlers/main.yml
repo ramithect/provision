@@ -1,0 +1,6 @@
+---
+- name: ----- Restart systemd-timesyncd.service -----
+  service:
+    name: systemd-timesyncd
+    state: restarted
+  tags: [restart_chrony]

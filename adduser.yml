@@ -1,0 +1,5 @@
+---
+- hosts: myservers
+  become: yes
+  roles:
+    - adduser

@@ -1,0 +1,17 @@
+- name: ----- Run squid container -----
+  docker_container:
+    name: squid
+    image: "{{ NEXUS_ADDRESS }}:8085/babim/squid"
+    volumes:
+            - /src/docker/squid/:/squid:rw
+    env:
+      AUTH: true
+      USERNAME: nexus-parspack
+      PASSWORD: hTqt2UD1
+      PUBLIC: true
+    ports:
+      - 3128:3128
+    restart_policy: always
+    tty: yes
+    state: started
+  tags: [squid_container]

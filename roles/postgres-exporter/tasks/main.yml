@@ -1,0 +1,32 @@
+---
+- name: ----- Create postgres-exporter-vol directory in /home/devops -----
+  file:
+    path: /home/devops/postgres-exporter-vol
+    state: directory
+    owner: devops
+    group: devops
+  tags: [create_dir]
+
+- name: ----- Copy queries.yaml to /home/devops/postgres-exporter-vol directory on the target server -----
+  copy:
+    src: queries.yaml
+    dest: /home/devops/postgres-exporter-vol/queries.yaml
+    owner: devops
+    group: devops
+  tags: [copy_queries.yaml]
+
+- name: ----- Run postgres-exporter container -----
+  docker_container:
+    name: postgres-exporter
+    image: "quay.io/prometheuscommunity/postgres-exporter:v0.10.0"
+    volumes:
+      - /home/devops/postgres-exporter-vol/queries.yaml:/home/queries.yaml:rw
+    command: --extend.query-path /home/queries.yaml --auto-discover-databases
+    ports:
+      - 9187:9187
+    env:
+      DATA_SOURCE_NAME: "postgresql://postgres_exporter:X7MfDoPc@{{ ansible_default_ipv4.address }}:5432/mon_zabbix?sslmode=disable"
+    restart_policy: unless-stopped
+    tty: yes
+    state: started
+  tags: [postgres-exporter_container]

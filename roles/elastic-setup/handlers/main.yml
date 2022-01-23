@@ -1,0 +1,7 @@
+---
+- name: ----- Enable and Start Elasticsearch -----
+  service:
+    name: elasticsearch
+    state: restarted
+    enabled: yes
+  tags: [start_enable]

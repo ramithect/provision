@@ -1,0 +1,12 @@
+---
+- name: ----- resize pv -----
+  shell: pvresize /dev/sda3
+
+- name: ----- Extend the logical volume to consume all remaining space in the volume group -----
+  lvol:
+    vg: ubuntu-vg
+    lv: ubuntu-lv
+    size: +100%FREE
+
+- name: ----- resize the lv -----
+  shell: resize2fs /dev/ubuntu-vg/ubuntu-lv

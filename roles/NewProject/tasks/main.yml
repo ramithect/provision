@@ -1,0 +1,35 @@
+---
+- name: ----- Create needed directories -----
+  file:
+    path: /home/ansible/provision/{{item}}
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - roles
+    - roles/{{ PROJECT_NAME }}
+    - roles/{{ PROJECT_NAME }}/defaults
+    - roles/{{ PROJECT_NAME }}/tasks
+    - roles/{{ PROJECT_NAME }}/handlers
+    - roles/{{ PROJECT_NAME }}/meta
+    - roles/{{ PROJECT_NAME }}/vars
+    - roles/{{ PROJECT_NAME }}/templates
+    - roles/{{ PROJECT_NAME }}/files
+  tags: [create_dirs]
+
+- name: ----- Create needed files  -----
+  file:
+    path: /home/ansible/provision/{{ item }}.yml
+    state: touch
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "{{ PROJECT_NAME }}"
+    - roles/{{ PROJECT_NAME }}/defaults/main
+    - roles/{{ PROJECT_NAME }}/tasks/main
+    - roles/{{ PROJECT_NAME }}/handlers/main
+    - roles/{{ PROJECT_NAME }}/meta/main
+    - roles/{{ PROJECT_NAME }}/vars/main
+  tags: [create_files]

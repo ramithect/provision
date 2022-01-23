@@ -1,0 +1,71 @@
+---
+- name: ----- Create node-exporter group -----
+  group:
+    name: node-exporter
+  tags: [node-exporter_group]
+
+- name: ----- Create node-exporter user -----
+  user:
+    name: node-exporter
+    group: node-exporter
+    shell: "/bin/false"
+    create_home: false
+  tags: [node-exporter_user]
+
+- name: ----- Unarchive the download pre-compiled binaries tar file -----
+  unarchive:
+    src: /tmp/node_exporter-1.3.1.linux-amd64.tar.gz
+    dest: /tmp
+  tags: [unarchive]
+
+- name: ----- Create /home/devops/node_exporter directory to put tls files for encryption -----
+  file:
+    path: /home/devops/.node_exporter
+    state: directory
+    owner: node-exporter
+    group: node-exporter
+    mode: 0770
+  tags: [create_dir]
+
+- name: ----- Create certificate files in /home/devops/.node_exporter/ directory -----
+  shell: /usr/bin/openssl req -new -x509 -newkey rsa:4096 -days 365 -nodes -keyout node_exporter.key -out node_exporter.crt -subj "/CN\=node_exporter" -addext "subjectAltName \= IP:{{ ansible_default_ipv4.address }}"
+  args:  
+    chdir: "/home/devops/.node_exporter"
+  tags: [gen_keys]
+
+- name: ----- Set right permissions for the certificates and web-config.yml -----
+  file:
+    path: /home/devops/.node_exporter
+    owner: node-exporter
+    group: node-exporter
+    recurse: yes
+  tags: [keys_permission]
+ 
+#- name: ----- Copy certificate files to /home/devops/.node_exporter/ directory -----
+#  copy:
+#    src: "{{ item }}"
+#    dest: /home/devops/.node_exporter
+#    owner: node-exporter
+#    group: node-exporter
+#    mode: 0440
+#  loop:
+#    - node_exporter.crt
+#    - node_exporter.key
+#  tags: [copy_keys]
+
+- name: ----- Put node_exporter.service Unit file in /etc/systemd/system directory with template module -----
+  template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+  notify: ----- Start and Enable node_exporter.service -----
+  tags: [template_mod]
+
+- name: ----- Put node_exporter.service Unit file in /etc/systemd/system directory with template module -----
+  template:
+    src: web-config.yml.j2
+    dest: /home/devops/.node_exporter/web-config.yml
+    owner: node-exporter
+    group: node-exporter
+    mode: 0770
+  notify: ----- Start and Enable node_exporter.service -----
+  tags: [template_mod]

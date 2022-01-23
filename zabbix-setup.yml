@@ -1,0 +1,6 @@
+---
+- hosts: all
+# you should specify your PostgresDB IP address via POSTGRES_ADDRESS key in order to use this playbook 
+# I have set it in ~~~> roles/zabbix-setup/vars/main.yaml 
+  roles:
+    - zabbix-setup

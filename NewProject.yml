@@ -1,0 +1,6 @@
+---
+# You should set PROJECT_NAME variable in order to run this playbook successfully otherwise it will fail
+- hosts: localhost
+  become: yes
+  roles:
+   - NewProject

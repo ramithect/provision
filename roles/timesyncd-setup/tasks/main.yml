@@ -1,0 +1,14 @@
+---
+- name: ----- Set timezone to Asia/Tehran -----
+  timezone:
+    name: Asia/Tehran
+  tags: [set_tz]
+
+- name: ----- Add needed ntp server with lineinfile module -----
+  lineinfile:
+    path: /etc/systemd/timesyncd.conf
+    regex: "NTP=192.168.*"
+    line: "NTP={{ NTP_ADDRESS }}"
+    state: present
+  notify: ----- Restart systemd-timesyncd.service -----
+  tags: [config_ntp]

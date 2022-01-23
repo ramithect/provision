@@ -1,0 +1,68 @@
+---
+- name: ----- Run zabbix-server-pgsql container -----
+  docker_container:
+    name: zabbix-server-pgsql
+    image: "{{ NEXUS_ADDRESS }}:8085/zabbix/zabbix-server-pgsql:alpine-5.4-latest"
+    volumes:
+      - zabbix---etc-zabbix:/etc/zabbix:rw
+      - zabbix---usr-lib-zabbix:/usr/lib/zabbix:rw
+      - zabbix---var-lib-zabbix:/var/lib/zabbix:rw
+      - zabbix---var-lib-zabbix-export:/var/lib/zabbix/export:rw
+      - zabbix---var-lib-zabbix-snmptraps:/var/lib/zabbix/snmptraps:rw
+    env:
+      DB_SERVER_HOST: "{{ POSTGRES_ADDRESS }}"
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: Qu8mjdWd
+      POSTGRES_DB: monit_zabbix
+      ZBX_CACHESIZE: 64M
+      ZBX_VALUECACHESIZE: 32M
+      ZBX_STARTVMWARECOLLECTORS: "2"
+      ZBX_STARTDISCOVERERS: "3"
+    ports:
+      - 10051:10051
+    etc_hosts:
+      webhook.idpay.ir: 130.185.76.53
+    restart_policy: unless-stopped
+    tty: yes
+    state: started
+  tags: [server_container]
+
+- name: ----- Run zabbix-web-nginx-pgsql container -----
+  docker_container:
+    name: zabbix-web-nginx-pgsql
+    image: "{{ NEXUS_ADDRESS }}:8085/zabbix/zabbix-web-nginx-pgsql:alpine-5.4-latest"
+    volumes:
+      - web---etc-zabbix:/etc/zabbix:rw
+      - web---etc-nginx:/etc/nginx:rw
+      - web---usr-share-zabbix:/usr/share/zabbix/conf:rw
+    env:
+      ZBX_SERVER_HOST: 172.17.0.2
+      DB_SERVER_HOST: "{{ POSTGRES_ADDRESS }}"
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: Qu8mjdWd
+      POSTGRES_DB: monit_zabbix
+    ports:
+      - 443:8443
+      - 80:8080
+    restart_policy: unless-stopped
+    tty: yes
+    state: started
+  tags: [web_container]
+
+- name: ----- Run zabbix-agent2 container -----
+  docker_container:
+    name: zabbix-agent2
+    image: "{{ NEXUS_ADDRESS }}:8085/zabbix/zabbix-agent2:alpine-5.4-latest"
+    volumes:
+      - agent---etc-zabbix:/etc/zabbix:rw
+      - agent---var-lib-zabbix:/var/lib/zabbix:rw
+    env:
+      ZBX_HOSTNAME: "Zabbix server"
+      ZBX_SERVER_HOST: 172.17.0.2
+      ZBX_LISTENPORT: "10052"
+    ports:
+      - 10052:10052
+    restart_policy: unless-stopped
+    tty: yes
+    state: started
+  tags: [agent_container]

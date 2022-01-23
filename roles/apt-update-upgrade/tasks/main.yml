@@ -1,0 +1,14 @@
+---
+- name: ----- Update cache and update all packages to their latest version -----
+  apt:
+    name: "*"
+    update_cache: yes
+    force: yes
+  tags: [apt_upgrade]
+
+- name: ----- Perform an apt-get dist-upgrade -----
+  apt:
+    upgrade: dist
+    update_cache: yes
+    force: yes
+  tags: [apt_dist_upgrade]
