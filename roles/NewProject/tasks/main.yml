@@ -1,7 +1,7 @@
 ---
 - name: ----- Create needed directories -----
   file:
-    path: /home/ansible/provision/Ansible/{{item}}
+    path: /home/ansible/provision/{{item}}
     state: directory
     owner: root
     group: root
@@ -19,7 +19,7 @@
 
 - name: ----- Create needed files  -----
   file:
-    path: /home/ansible/provision/Ansible/{{ item }}.yml
+    path: /home/ansible/provision/{{ item }}.yml
     state: touch
     owner: root
     group: root

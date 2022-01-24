@@ -36,7 +36,7 @@ add address=192.168.20.4/24 interface=vrrp4 network=192.168.20.0
 /ip cloud
 set update-time=no
 /ip dns
-set servers=1.1.1.1,9.9.9.9,185.97.117.187,37.156.145.21,185.187.84.15
+set servers=185.97.117.187,217.219.250.202,37.156.145.21,185.187.84.15,82.99.242.155 
 /ip firewall filter
 add action=drop chain=input dst-port=53 in-interface=994 protocol=tcp
 add action=drop chain=input dst-port=53 in-interface=994 protocol=udp

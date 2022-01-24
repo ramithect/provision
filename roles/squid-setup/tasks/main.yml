@@ -11,7 +11,7 @@
       PUBLIC: true
     ports:
       - 3128:3128
-    restart_policy: always
+    restart_policy: Unless-stopped
     tty: yes
     state: started
   tags: [squid_container]
