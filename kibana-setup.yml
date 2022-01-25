@@ -1,0 +1,5 @@
+---
+- hosts: Kibana
+  gather_facts: false
+  roles:
+    - kibana-setup

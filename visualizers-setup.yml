@@ -1,5 +1,6 @@
 ---
-- hosts: Grafana
+- hosts: Visualizers
   gather_facts: false
   roles:
     - grafana-setup
+    - kibana-setup

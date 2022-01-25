@@ -1,0 +1,15 @@
+- name: ----- Run kibana container -----
+  docker_container:
+    name: kibana
+    image: "{{ NEXUS_ADDRESS }}:8085/kibana:7.16.3"
+    volumes:
+      - kibana---/usr/share/kibana:/usr/share/kibana:rw
+      - kibana---/etc/kibana:/etc/kibana:rw
+    env:
+      ELASTICSEARCH_HOSTS: ["http://192.168.50.81:9200","http://192.168.50.82:9200","http://192.168.50.83:9200"]
+    ports:
+      - 5601:5601
+    restart_policy: Unless-stopped
+    tty: yes
+    state: started
+  tags: [kibana_container]
